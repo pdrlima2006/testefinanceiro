@@ -172,6 +172,7 @@
           <th>Data</th>
           <th>Prazo (meses)</th>
           <th>Rentabilidade (% a.a.)</th>
+          <th>Rendimento Mensal (R$)</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -193,9 +194,23 @@
       return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
+    function formatarPercentual(valor) {
+      return valor !== null && valor !== undefined
+        ? valor.toFixed(1).replace('.', ',') + '%'
+        : '-';
+    }
+
+    function calcularRendimentoMensal(valor, rentabilidadeAnual) {
+      if (valor && rentabilidadeAnual) {
+        return (valor * (rentabilidadeAnual / 100) / 12);
+      }
+      return 0;
+    }
+
     function atualizarTabela() {
       tabelaBody.innerHTML = '';
       investimentos.forEach((invest, index) => {
+        const rendimentoMensal = calcularRendimentoMensal(invest.valor, invest.rentabilidade);
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><input type="checkbox" data-index="${index}"></td>
@@ -204,7 +219,8 @@
           <td>${formatarMoedaBR(invest.valor)}</td>
           <td>${invest.data || '-'}</td>
           <td>${invest.prazo !== undefined ? invest.prazo : '-'}</td>
-          <td>${invest.rentabilidade !== undefined ? invest.rentabilidade : '-'}</td>
+          <td>${formatarPercentual(invest.rentabilidade)}</td>
+          <td>${formatarMoedaBR(rendimentoMensal)}</td>
         `;
         tabelaBody.appendChild(tr);
       });
