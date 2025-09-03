@@ -6,6 +6,7 @@
   <title>📊 Painel de Controle</title>
   <link rel="stylesheet" href="style.css" />
   <style>
+    /* Seu estilo existente */
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -86,6 +87,76 @@
         margin-bottom: 20px;
       }
     }
+
+    /* Estilo do balão de suporte */
+    #suporte-chat-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #007acc;
+      color: white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      border: none;
+      cursor: pointer;
+      font-size: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      z-index: 1000;
+    }
+    #chat-container {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 300px;
+      max-height: 400px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1000;
+    }
+    #chat-header {
+      background: #007acc;
+      color: white;
+      padding: 10px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #chat-mensagens {
+      flex-grow: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 14px;
+    }
+    #chat-input-container {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+    #chat-input {
+      flex-grow: 1;
+      border: none;
+      padding: 10px;
+      font-size: 14px;
+    }
+    #chat-input:focus {
+      outline: none;
+    }
+    #chat-enviar-btn {
+      background: #007acc;
+      color: white;
+      border: none;
+      padding: 0 15px;
+      cursor: pointer;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -113,6 +184,24 @@
     <p>Aqui você faz seu <strong>Controle Financeiro</strong> de forma simples e prática!</p>
   </div>
 
+  <!-- Botão do chat suporte -->
+  <button id="suporte-chat-btn" title="Suporte">💬</button>
+
+  <!-- Container do chat -->
+  <div id="chat-container" aria-live="polite" aria-label="Chat de suporte">
+    <div id="chat-header">
+      Suporte
+      <button id="chat-close-btn" aria-label="Fechar chat" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">×</button>
+    </div>
+    <div id="chat-mensagens" role="log" aria-live="polite" aria-relevant="additions"></div>
+    <form id="chat-form" autocomplete="off" aria-label="Formulário de chat de suporte">
+      <div id="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Digite sua mensagem..." aria-required="true" />
+        <button type="submit" id="chat-enviar-btn" aria-label="Enviar mensagem">Enviar</button>
+      </div>
+    </form>
+  </div>
+
   <!-- Módulo JS com import correto -->
   <script type="module">
     import { checkLogin, logout } from './script.js';
@@ -126,6 +215,71 @@
       if (logoutBtn) {
         logoutBtn.addEventListener('click', logout);
       }
+
+      // Chat suporte
+      const suporteBtn = document.getElementById('suporte-chat-btn');
+      const chatContainer = document.getElementById('chat-container');
+      const chatCloseBtn = document.getElementById('chat-close-btn');
+      const chatForm = document.getElementById('chat-form');
+      const chatInput = document.getElementById('chat-input');
+      const chatMensagens = document.getElementById('chat-mensagens');
+
+      // Mostrar / esconder chat
+      suporteBtn.addEventListener('click', () => {
+        if (chatContainer.style.display === 'flex') {
+          chatContainer.style.display = 'none';
+        } else {
+          chatContainer.style.display = 'flex';
+          chatInput.focus();
+          carregarChamados();
+        }
+      });
+
+      chatCloseBtn.addEventListener('click', () => {
+        chatContainer.style.display = 'none';
+      });
+
+      // Enviar mensagem (chamado)
+      chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const msg = chatInput.value.trim();
+        if (!msg) return;
+
+        salvarChamado(msg);
+        chatInput.value = '';
+        carregarChamados();
+      });
+
+      function salvarChamado(mensagem) {
+        // Simula envio para backend: salva no localStorage
+        const chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
+        chamados.push({ mensagem, data: new Date().toISOString() });
+        localStorage.setItem('chamados-suporte', JSON.stringify(chamados));
+        alert('Chamado enviado com sucesso! Aguarde nosso contato.');
+      }
+
+      function carregarChamados() {
+        const chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
+        chatMensagens.innerHTML = '';
+        if (chamados.length === 0) {
+          chatMensagens.innerHTML = '<p><em>Nenhum chamado enviado.</em></p>';
+          return;
+        }
+        chamados.forEach(c => {
+          const div = document.createElement('div');
+          div.style.borderBottom = '1px solid #eee';
+          div.style.padding = '5px 0';
+          div.innerHTML = `<strong>Você:</strong> ${c.mensagem} <br><small style="color:#888;">${new Date(c.data).toLocaleString()}</small>`;
+          chatMensagens.appendChild(div);
+        });
+        chatMensagens.scrollTop = chatMensagens.scrollHeight;
+      }
+
+      // Para testar, ver os chamados no console:
+      window.verChamadosSuporte = function() {
+        const chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
+        console.log('Chamados de Suporte:', chamados);
+      };
     });
   </script>
 </body>
