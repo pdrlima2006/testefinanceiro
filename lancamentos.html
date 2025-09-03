@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -11,6 +11,7 @@
       font-family: Arial, sans-serif;
       background: #f9f9f9;
       padding: 20px;
+      margin: 0;
     }
     header {
       background-color: #003366;
@@ -49,17 +50,27 @@
       border-radius: 5px;
       cursor: pointer;
       margin-top: 20px;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background: #002244;
     }
     button.deletar {
       background: #d32f2f;
       margin-top: 10px;
       margin-right: 10px;
     }
+    button.deletar:hover {
+      background: #a52828;
+    }
     a {
       display: inline-block;
       margin-top: 10px;
       color: #003366;
       text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
     }
     ul {
       margin-top: 20px;
@@ -68,11 +79,16 @@
       border-radius: 8px;
       box-shadow: 0 0 5px rgba(0,0,0,0.05);
       list-style: none;
+      max-height: 300px;
+      overflow-y: auto;
     }
     li {
       margin-bottom: 10px;
       display: flex;
       align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 6px;
     }
     li label {
       flex-grow: 1;
@@ -87,9 +103,32 @@
     #saldoDoMes {
       font-weight: bold;
       margin-top: 10px;
+      font-size: 1.1em;
     }
     .acoes-deletar {
       margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Responsividade */
+    @media (max-width: 600px) {
+      .linha-campos {
+        flex-direction: column;
+      }
+      .campo {
+        flex: 1 1 100%;
+      }
+      button {
+        width: 100%;
+      }
+      .acoes-deletar {
+        flex-direction: column;
+      }
+      ul {
+        max-height: 200px;
+      }
     }
   </style>
 </head>
@@ -97,34 +136,61 @@
   <header><h1>💸 Entradas e Saídas</h1></header>
 
   <main>
-    <form id="transacaoForm">
+    <form id="transacaoForm" autocomplete="off" novalidate>
       <div class="linha-campos">
         <div class="campo">
-          <label>Tipo:</label>
-          <select name="tipo" required>
+          <label for="tipo">Tipo:</label>
+          <select name="tipo" id="tipo" required>
+            <option value="" disabled selected>Selecione o tipo</option>
             <option value="entrada">Entrada</option>
             <option value="saida">Saída</option>
           </select>
         </div>
 
         <div class="campo">
-          <label>Valor:</label>
-          <input type="number" name="valor" step="0.01" required />
+          <label for="categoria">Categoria:</label>
+          <select name="categoria" id="categoria" required>
+            <option value="" disabled selected>Selecione a categoria</option>
+            <option value="Alimentação">Alimentação</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Saúde">Saúde</option>
+            <option value="Lazer">Lazer</option>
+            <option value="Salário">Salário</option>
+            <option value="Outros">Outros</option>
+          </select>
         </div>
 
         <div class="campo">
-          <label>Descrição:</label>
-          <input type="text" name="descricao" required />
+          <label for="formaPagamento">Forma de Pagamento:</label>
+          <select name="formaPagamento" id="formaPagamento" required>
+            <option value="" disabled selected>Selecione a forma</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Cartão de Crédito">Cartão de Crédito</option>
+            <option value="Cartão de Débito">Cartão de Débito</option>
+            <option value="PIX">PIX</option>
+            <option value="Transferência">Transferência</option>
+            <option value="Outros">Outros</option>
+          </select>
         </div>
 
         <div class="campo">
-          <label>Data:</label>
-          <input type="date" name="data" required />
+          <label for="valor">Valor (R$):</label>
+          <input type="number" name="valor" id="valor" step="0.01" min="0.01" placeholder="0,00" required />
+        </div>
+
+        <div class="campo">
+          <label for="descricao">Descrição:</label>
+          <input type="text" name="descricao" id="descricao" maxlength="100" placeholder="Ex: Compra mercado" required />
+        </div>
+
+        <div class="campo">
+          <label for="data">Data:</label>
+          <input type="date" name="data" id="data" required />
         </div>
 
         <div class="campo" style="flex: 1 1 100%;">
-          <label>Anexar Nota Fiscal (opcional):</label>
-          <input type="file" name="notaFiscal" accept=".pdf,.jpg,.jpeg,.png" />
+          <label for="notaFiscal">Anexar Nota Fiscal (opcional, max 2MB):</label>
+          <input type="file" name="notaFiscal" id="notaFiscal" accept=".pdf,.jpg,.jpeg,.png" />
         </div>
       </div>
 
@@ -144,7 +210,7 @@
     </div>
 
     <h2>📋 Histórico</h2>
-    
+
     <div class="acoes-deletar">
       <button class="deletar" onclick="deletarSelecionados()">Deletar Selecionados</button>
       <button class="deletar" onclick="deletarTodos()">Deletar Tudo</button>
@@ -168,6 +234,10 @@
       return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
+    function gerarIdUnico() {
+      return '_' + Math.random().toString(36).substr(2, 9);
+    }
+
     function atualizarLista(transacoes) {
       lista.innerHTML = '';
       transacoes.forEach((t, index) => {
@@ -180,7 +250,9 @@
 
         const label = document.createElement('label');
         label.htmlFor = `transacao-${index}`;
-        label.innerHTML = `${t.data} - ${t.tipo.toUpperCase()} de ${formatarValor(Number(t.valor))} (${t.descricao})`;
+        label.innerHTML = `
+          <strong>[${t.tipo.toUpperCase()}]</strong> ${t.data} - ${t.categoria} - ${t.formaPagamento} - ${formatarValor(Number(t.valor))} - ${t.descricao}
+        `;
         if (t.notaFiscalNome) {
           const link = document.createElement('a');
           link.href = t.notaFiscalBase64;
@@ -235,6 +307,7 @@
       atualizarGrafico(transacoes);
       saldoMesEl.textContent = '';
       inputFiltroMes.value = '';
+      atualizarResumoGeral(transacoes);
     }
 
     function filtrarPorMes() {
@@ -256,6 +329,7 @@
 
       atualizarLista(filtradas);
       atualizarGrafico(filtradas);
+      atualizarResumoGeral(filtradas);
     }
 
     function mostrarSaldoMes() {
@@ -322,12 +396,18 @@
 
       filtradas.forEach(t => {
         pdf.text(`Data: ${formatarDataBR(t.data)}`, 10, y);
-        pdf.text(`Tipo: ${t.tipo}`, 60, y);
-        pdf.text(`Valor: ${formatarValor(Number(t.valor))}`, 110, y);
-        pdf.text(`Descrição: ${t.descricao}`, 160, y);
+        pdf.text(`Tipo: ${t.tipo}`, 50, y);
+        pdf.text(`Categoria: ${t.categoria}`, 90, y);
+        pdf.text(`Forma: ${t.formaPagamento}`, 140, y);
+        pdf.text(`Valor: ${formatarValor(Number(t.valor))}`, 180, y);
         y += 10;
+        pdf.text(`Descrição: ${t.descricao}`, 10, y);
+        y += 15;
 
-        // Se quiser colocar a nota fiscal (base64), poderia tentar inserir a imagem, mas pdf com muitas imagens pode ficar pesado.
+        if (y > 270) { // Evita ultrapassar margem inferior
+          pdf.addPage();
+          y = 20;
+        }
       });
 
       pdf.save(`Relatorio_${ano}_${mes}.pdf`);
@@ -341,10 +421,11 @@
         return;
       }
 
-      // Remover do array pelas posições
-      const indicesParaRemover = Array.from(checkboxes).map(cb => Number(cb.dataset.index));
+      if (!confirm(`Tem certeza que deseja deletar ${checkboxes.length} transação(ões)?`)) {
+        return;
+      }
 
-      // Filtrar as que não estão selecionadas
+      const indicesParaRemover = Array.from(checkboxes).map(cb => Number(cb.dataset.index));
       const novasTransacoes = transacoes.filter((_, i) => !indicesParaRemover.includes(i));
 
       localStorage.setItem('transacoes', JSON.stringify(novasTransacoes));
@@ -363,13 +444,22 @@
 
       const dados = new FormData(form);
       const tipo = dados.get('tipo');
-      const valor = Number(dados.get('valor')).toFixed(2);
-      const descricao = dados.get('descricao');
+      const categoria = dados.get('categoria');
+      const formaPagamento = dados.get('formaPagamento');
+      const valorRaw = dados.get('valor');
+      const valor = Number(valorRaw).toFixed(2);
+      const descricao = dados.get('descricao').trim();
       const data = dados.get('data');
       const notaFiscalArquivo = form.notaFiscal.files[0];
 
-      if (!tipo || !valor || !descricao || !data) {
-        alert('Preencha todos os campos obrigatórios.');
+      if (!tipo || !categoria || !formaPagamento || !valorRaw || valorRaw <= 0 || !descricao || !data) {
+        alert('Preencha todos os campos obrigatórios corretamente.');
+        return;
+      }
+
+      // Limite de 2MB no anexo
+      if (notaFiscalArquivo && notaFiscalArquivo.size > 2 * 1024 * 1024) {
+        alert('O arquivo da nota fiscal deve ter no máximo 2MB.');
         return;
       }
 
@@ -377,7 +467,10 @@
         const reader = new FileReader();
         reader.onload = function(event) {
           salvarTransacao({
+            id: gerarIdUnico(),
             tipo,
+            categoria,
+            formaPagamento,
             valor,
             descricao,
             data,
@@ -387,7 +480,15 @@
         };
         reader.readAsDataURL(notaFiscalArquivo);
       } else {
-        salvarTransacao({ tipo, valor, descricao, data });
+        salvarTransacao({
+          id: gerarIdUnico(),
+          tipo,
+          categoria,
+          formaPagamento,
+          valor,
+          descricao,
+          data
+        });
       }
     });
 
@@ -400,8 +501,20 @@
       alert('Transação salva com sucesso!');
     }
 
-    // Carregar dados ao iniciar
-    carregarDados();
+    function atualizarResumoGeral(transacoes) {
+      const entradas = transacoes.filter(t => t.tipo === 'entrada').reduce((s, t) => s + Number(t.valor), 0);
+      const saidas = transacoes.filter(t => t.tipo === 'saida').reduce((s, t) => s + Number(t.valor), 0);
+      const saldo = entradas - saidas;
+
+      saldoMesEl.textContent = `Resumo Geral - Entradas: ${formatarValor(entradas)} | Saídas: ${formatarValor(saidas)} | Saldo: ${formatarValor(saldo)}`;
+    }
+
+    // Inicializa data para hoje no campo data
+    window.addEventListener('load', () => {
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('data').value = hoje;
+      carregarDados();
+    });
   </script>
 </body>
 </html>
