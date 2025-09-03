@@ -1,0 +1,165 @@
+/* Estilo base - Desktop e geral */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0 20px;
+}
+
+header {
+  background-color: #003366;
+  color: white;
+  padding: 15px 20px;
+  text-align: center;
+  font-size: 24px;
+}
+
+h1, h2 {
+  margin: 0 0 15px 0;
+}
+
+form {
+  max-width: 300px;
+  margin: 30px auto;
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  margin-top: 15px;
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+  background-color: #003366;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0055aa;
+}
+
+/* RESPONSIVIDADE - para telas menores */
+@media (max-width: 600px) {
+  body {
+    padding: 0 10px;
+  }
+
+  header {
+    padding: 10px 10px;
+    font-size: 20px;
+  }
+
+  form {
+    max-width: 100%;
+    margin: 20px auto;
+    padding: 10px;
+  }
+
+  label {
+    font-size: 14px;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    font-size: 14px;
+    padding: 6px;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+/* ========================= */
+/* Boneco + Maleta Animados */
+/* ========================= */
+.scene {
+  position: relative;
+  height: 200px;
+  margin-top: 30px;
+}
+
+.character {
+  position: absolute;
+  left: -150px;
+  bottom: 0;
+  animation: walk-in 3s forwards;
+}
+
+.head {
+  width: 40px;
+  height: 40px;
+  background: peachpuff;
+  border-radius: 50%;
+  margin: auto;
+}
+
+.body {
+  width: 40px;
+  height: 60px;
+  background: navy;
+  margin: auto;
+}
+
+.legs {
+  width: 40px;
+  height: 20px;
+  background: black;
+  margin: auto;
+}
+
+.briefcase {
+  position: absolute;
+  left: 120px;
+  bottom: 0;
+  width: 50px;
+  height: 35px;
+  background: brown;
+  border: 2px solid #000;
+  border-radius: 5px;
+  transition: transform 1s;
+  transform-origin: bottom;
+}
+
+.briefcase.open {
+  transform: rotateX(150deg);
+}
+
+@keyframes walk-in {
+  0% { left: -150px; }
+  100% { left: 100px; }
+}
+
+#login-section {
+  margin-top: 20px;
+  animation: fade-in 1s forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

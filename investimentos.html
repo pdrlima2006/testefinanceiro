@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🏦 Investimentos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      margin: 0;
+    }
+
+    header {
+      background: #003366;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    form#form-investimento {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .form-group label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    form#form-investimento button {
+      height: 42px;
+      padding: 10px 20px;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #003366;
+      color: white;
+    }
+
+    .btn-delete {
+      margin-top: 10px;
+      padding: 10px 15px;
+      background-color: #cc0000;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    a {
+      display: block;
+      margin-top: 20px;
+      text-decoration: none;
+      color: #003366;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      form#form-investimento {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .form-group {
+        width: 100%;
+      }
+
+      form#form-investimento button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header><h1>🏦 Investimentos</h1></header>
+  <main>
+    <form id="form-investimento">
+      <div class="form-group">
+        <label for="banco">Instituição:</label>
+        <input type="text" name="banco" id="banco" required />
+      </div>
+
+      <div class="form-group">
+        <label for="tipo">Tipo de Investimento:</label>
+        <select name="tipo" id="tipo" required>
+          <option value="">Selecione...</option>
+          <option value="Renda Fixa">Renda Fixa</option>
+          <option value="Renda Variável">Renda Variável</option>
+          <option value="Fundo Imobiliário">Fundo Imobiliário</option>
+          <option value="Criptomoeda">Criptomoeda</option>
+          <option value="Poupança">Poupança</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="valor">Valor (R$):</label>
+        <input type="number" step="0.01" min="0" name="valor" id="valor" required />
+      </div>
+
+      <div class="form-group">
+        <label for="data">Data da aplicação:</label>
+        <input type="date" name="data" id="data" required />
+      </div>
+
+      <div class="form-group">
+        <label for="prazo">Prazo (meses):</label>
+        <input type="number" min="0" name="prazo" id="prazo" />
+      </div>
+
+      <div class="form-group">
+        <label for="rentabilidade">Rentabilidade (% a.a.):</label>
+        <input type="number" step="0.01" min="0" name="rentabilidade" id="rentabilidade" />
+      </div>
+
+      <button type="submit">Salvar</button>
+    </form>
+
+    <table id="tabela-investimentos">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Instituição</th>
+          <th>Tipo</th>
+          <th>Valor (R$)</th>
+          <th>Data</th>
+          <th>Prazo (meses)</th>
+          <th>Rentabilidade (% a.a.)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button class="btn-delete" id="btn-deletar">🗑 Deletar Investimento</button>
+
+    <a href="dashboard.html">← Voltar ao Painel</a>
+  </main>
+
+  <script>
+    const form = document.getElementById('form-investimento');
+    const tabelaBody = document.querySelector('#tabela-investimentos tbody');
+    const btnDeletar = document.getElementById('btn-deletar');
+
+    let investimentos = JSON.parse(localStorage.getItem('investimentos')) || [];
+
+    function formatarMoedaBR(valor) {
+      return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function atualizarTabela() {
+      tabelaBody.innerHTML = '';
+      investimentos.forEach((invest, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="checkbox" data-index="${index}"></td>
+          <td>${invest.banco}</td>
+          <td>${invest.tipo}</td>
+          <td>${formatarMoedaBR(invest.valor)}</td>
+          <td>${invest.data || '-'}</td>
+          <td>${invest.prazo !== undefined ? invest.prazo : '-'}</td>
+          <td>${invest.rentabilidade !== undefined ? invest.rentabilidade : '-'}</td>
+        `;
+        tabelaBody.appendChild(tr);
+      });
+    }
+
+    atualizarTabela();
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const banco = form.elements['banco'].value.trim();
+      const tipo = form.elements['tipo'].value;
+      const valor = parseFloat(form.elements['valor'].value);
+      const data = form.elements['data'].value;
+      const prazo = form.elements['prazo'].value ? parseInt(form.elements['prazo'].value) : null;
+      const rentabilidade = form.elements['rentabilidade'].value ? parseFloat(form.elements['rentabilidade'].value) : null;
+
+      if (!banco || !tipo || isNaN(valor) || !data) {
+        alert('Preencha todos os campos obrigatórios corretamente.');
+        return;
+      }
+
+      const novoInvestimento = { banco, tipo, valor, data };
+
+      if (prazo !== null) novoInvestimento.prazo = prazo;
+      if (rentabilidade !== null) novoInvestimento.rentabilidade = rentabilidade;
+
+      investimentos.push(novoInvestimento);
+      localStorage.setItem('investimentos', JSON.stringify(investimentos));
+
+      form.reset();
+      atualizarTabela();
+    });
+
+    btnDeletar.addEventListener('click', () => {
+      const checkboxes = document.querySelectorAll('#tabela-investimentos tbody input[type="checkbox"]:checked');
+      if (checkboxes.length === 0) {
+        alert('Selecione ao menos um investimento para deletar.');
+        return;
+      }
+      if (!confirm('Tem certeza que deseja excluir o(s) investimento(s) selecionado(s)?')) return;
+
+      const indicesParaRemover = Array.from(checkboxes).map(cb => Number(cb.dataset.index));
+
+      investimentos = investimentos.filter((_, idx) => !indicesParaRemover.includes(idx));
+      localStorage.setItem('investimentos', JSON.stringify(investimentos));
+      atualizarTabela();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>💳 Cartões de Crédito</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+      margin: 0;
+    }
+    header {
+      background-color: #4a148c;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .linha-campos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .campo {
+      flex: 1 1 180px;
+      display: flex;
+      flex-direction: column;
+    }
+    .campo label {
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .campo input, .campo select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      background: #4a148c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button.deletar {
+      background: #d32f2f;
+      margin-top: 10px;
+    }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      color: #4a148c;
+      text-decoration: none;
+    }
+    h2 {
+      margin-top: 40px;
+    }
+    .cartao {
+      width: 320px;
+      background: linear-gradient(135deg, #673ab7, #512da8);
+      color: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      position: relative;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .cartao .bandeira {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      width: 60px;
+    }
+    .cartao .numero {
+      margin-top: 40px;
+      font-size: 18px;
+      letter-spacing: 2px;
+    }
+    .cartao .nome {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    .cartao .info {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    #listaCartoes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💳 Cartões de Crédito</h1>
+  </header>
+
+  <main>
+    <form id="cartaoForm">
+      <div class="linha-campos">
+        <div class="campo">
+          <label for="numeroCartao">Número do Cartão:</label>
+          <input 
+            type="text" 
+            id="numeroCartao" 
+            name="numeroCartao" 
+            required 
+            placeholder="Ex: 1234 5678 9012 3456" 
+            maxlength="19" 
+          />
+        </div>
+
+        <div class="campo">
+          <label for="banco">Banco:</label>
+          <select id="banco" name="banco" required>
+            <option value="">Selecione o banco</option>
+            <option value="Inter">Inter</option>
+            <option value="Nubank">Nubank</option>
+            <option value="Itaú">Itaú</option>
+            <option value="Bradesco">Bradesco</option>
+            <option value="Santander">Santander</option>
+            <option value="Banco do Brasil">Banco do Brasil</option>
+            <option value="Caixa">Caixa</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="limite">Limite (R$):</label>
+          <input type="number" step="0.01" min="0" id="limite" name="limite" required />
+        </div>
+
+        <div class="campo">
+          <label for="fatura">Fatura Atual (R$):</label>
+          <input type="number" step="0.01" min="0" id="fatura" name="fatura" required />
+        </div>
+      </div>
+
+      <div class="linha-campos" style="margin-top: 15px;">
+        <div class="campo">
+          <label for="vencimento">Data de Vencimento:</label>
+          <input type="number" min="1" max="31" id="vencimento" name="vencimento" required placeholder="Dia do mês" />
+        </div>
+
+        <div class="campo">
+          <label for="melhorCompra">Melhor Dia de Compra:</label>
+          <input type="number" min="1" max="31" id="melhorCompra" name="melhorCompra" required placeholder="Dia do mês" />
+        </div>
+
+        <div class="campo">
+          <label for="mesAnoFatura">Mês/Ano da Fatura:</label>
+          <input type="month" id="mesAnoFatura" name="mesAnoFatura" required />
+        </div>
+      </div>
+
+      <button type="submit">Salvar</button>
+    </form>
+
+    <a href="dashboard.html">← Voltar ao Painel</a>
+
+    <h2>📋 Cartões Salvos</h2>
+    <div id="listaCartoes"></div>
+  </main>
+
+  <script>
+    const form = document.getElementById('cartaoForm');
+    const lista = document.getElementById('listaCartoes');
+    const numeroInput = document.getElementById('numeroCartao');
+
+    // Máscara automática do número do cartão
+    numeroInput.addEventListener('input', () => {
+      let value = numeroInput.value.replace(/\D/g, '');
+      value = value.match(/.{1,4}/g)?.join(' ') || '';
+      numeroInput.value = value;
+    });
+
+    function formatarNumeroCartao(numero) {
+      if (!numero) return '**** **** **** ****';
+      const numLimpo = numero.replace(/\D/g, '');
+      if (numLimpo.length < 4) return numero;
+      const ultimos4 = numLimpo.slice(-4);
+      return '**** **** **** ' + ultimos4;
+    }
+
+    function detectarBandeira(numero, banco) {
+      banco = banco.toLowerCase();
+      if (banco.includes('inter') || banco.includes('nubank')) return 'https://img.icons8.com/color/48/000000/mastercard.png';
+      if (banco.includes('itaú') || banco.includes('bradesco') || banco.includes('santander') || banco.includes('banco do brasil')) return 'https://img.icons8.com/color/48/000000/visa.png';
+      if (banco.includes('caixa')) return 'https://img.icons8.com/color/48/000000/elo.png';
+      if (numero && numero.startsWith('4')) return 'https://img.icons8.com/color/48/000000/visa.png';
+      if (numero && numero.startsWith('5')) return 'https://img.icons8.com/color/48/000000/mastercard.png';
+      return 'https://img.icons8.com/ios-filled/50/ffffff/bank-card-back-side.png';
+    }
+
+    function formatarReal(valor) {
+      return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function carregarCartoes() {
+      const cartoes = JSON.parse(localStorage.getItem('cartoes')) || [];
+      lista.innerHTML = '';
+      cartoes.forEach((c, index) => {
+        if (!c.numeroCartao || !c.banco) return; // Ignora dados corrompidos
+
+        const limite = parseFloat(c.limite);
+        const fatura = parseFloat(c.fatura);
+        const disponivel = (limite - fatura).toFixed(2);
+        const numeroFormatado = formatarNumeroCartao(c.numeroCartao);
+        const bandeira = detectarBandeira(c.numeroCartao, c.banco);
+        const [ano, mes] = c.mesAnoFatura.split('-');
+        const dataFormatada = `${mes}/${ano}`;
+        const div = document.createElement('div');
+        div.className = 'cartao';
+        div.innerHTML = `
+          <img class="bandeira" src="${bandeira}" alt="Bandeira" />
+          <div class="numero">${numeroFormatado}</div>
+          <div class="nome">💳 ${c.banco}</div>
+          <div class="info">💰 Limite: ${formatarReal(limite)}</div>
+          <div class="info">📄 Fatura: ${formatarReal(fatura)}</div>
+          <div class="info">✅ Disponível: ${formatarReal(parseFloat(disponivel))}</div>
+          <div class="info">📅 Vencimento: Dia ${c.vencimento}</div>
+          <div class="info">🛒 Melhor dia compra: Dia ${c.melhorCompra}</div>
+          <div class="info">🗓️ Mês/Ano fatura: ${dataFormatada}</div>
+          <button class="deletar" onclick="deletarCartao(${index})">🗑️ Deletar</button>
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    function deletarCartao(index) {
+      let cartoes = JSON.parse(localStorage.getItem('cartoes')) || [];
+      cartoes.splice(index, 1);
+      localStorage.setItem('cartoes', JSON.stringify(cartoes));
+      carregarCartoes();
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const numeroCartao = form.numeroCartao.value.trim();
+      const banco = form.banco.value.trim();
+      const limite = parseFloat(form.limite.value);
+      const fatura = parseFloat(form.fatura.value);
+      const vencimento = parseInt(form.vencimento.value.trim());
+      const melhorCompra = parseInt(form.melhorCompra.value.trim());
+      const mesAnoFatura = form.mesAnoFatura.value;
+
+      if (!numeroCartao || !banco || isNaN(limite) || isNaN(fatura) || !mesAnoFatura) {
+        alert("Preencha todos os campos corretamente.");
+        return;
+      }
+
+      const numLimpo = numeroCartao.replace(/\D/g, '');
+      if (numLimpo.length < 13 || numLimpo.length > 19) {
+        alert("Número do cartão inválido. Deve conter entre 13 e 19 dígitos.");
+        return;
+      }
+
+      if (vencimento < 1 || vencimento > 31 || melhorCompra < 1 || melhorCompra > 31) {
+        alert("Digite um dia válido (1 a 31) para vencimento e melhor dia de compra.");
+        return;
+      }
+
+      const novoCartao = { numeroCartao, banco, limite, fatura, vencimento, melhorCompra, mesAnoFatura };
+      const cartoes = JSON.parse(localStorage.getItem('cartoes')) || [];
+      cartoes.push(novoCartao);
+      localStorage.setItem('cartoes', JSON.stringify(cartoes));
+
+      form.reset();
+      carregarCartoes();
+    });
+
+    window.deletarCartao = deletarCartao;
+    document.addEventListener('DOMContentLoaded', carregarCartoes);
+  </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Extrato Geral</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    h1 { color: #003366; }
+    .filtro { margin: 20px 0; }
+    .filtro label { font-weight: bold; margin-right: 10px; }
+    input[type="month"] {
+      padding: 8px;
+      font-size: 1rem;
+    }
+    button {
+      padding: 8px 16px;
+      margin-left: 10px;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #003366;
+      color: white;
+    }
+    .positivo { color: green; }
+    .negativo { color: red; }
+    .back {
+      margin-top: 20px;
+    }
+    .back a {
+      text-decoration: none;
+      color: #003366;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📄 Extrato Geral</h1>
+
+  <div class="filtro">
+    <label for="mesAno">Selecione o mês/ano:</label>
+    <input type="month" id="mesAno" />
+    <button onclick="carregarExtrato()">Gerar Extrato</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Saldo</th>
+        <th>Investimento</th>
+        <th>Fatura</th>
+        <th>Disponível</th>
+      </tr>
+    </thead>
+    <tbody id="extrato-body">
+      <!-- Dados gerados via script -->
+    </tbody>
+  </table>
+
+  <div class="back">
+    <a href="dashboard.html">← Voltar ao Painel</a>
+  </div>
+
+  <script>
+    function formatarReal(valor) {
+      return valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+    }
+
+    function calcularSaldoMes(ano, mes) {
+      const transacoes = JSON.parse(localStorage.getItem("transacoes")) || [];
+      return transacoes
+        .filter(t => {
+          const [a, m] = t.data.split("-");
+          return a === ano && m === mes;
+        })
+        .reduce((total, t) => {
+          return total + (t.tipo === "entrada" ? parseFloat(t.valor) : -parseFloat(t.valor));
+        }, 0);
+    }
+
+    function calcularInvestimentosMes(ano, mes) {
+      const investimentos = JSON.parse(localStorage.getItem("investimentos")) || [];
+      return investimentos
+        .filter(i => {
+          if (!i.data) return false;
+          const [a, m] = i.data.split("-");
+          return a === ano && m === mes;
+        })
+        .reduce((total, i) => total + parseFloat(i.valor), 0);
+    }
+
+    function calcularFaturasMes(ano, mes) {
+      const cartoes = JSON.parse(localStorage.getItem("cartoes")) || [];
+      const mesFormatado = mes.padStart(2, '0');
+      const faturaAlvo = `${ano}-${mesFormatado}`;
+
+      // Filtrar cartões com fatura válida e do mês solicitado
+      const cartoesDoMes = cartoes.filter(c => 
+        c.mesAnoFatura === faturaAlvo && !isNaN(parseFloat(c.fatura))
+      );
+
+      if (cartoesDoMes.length === 1) {
+        return parseFloat(cartoesDoMes[0].fatura);
+      }
+
+      return cartoesDoMes.reduce((total, c) => total + parseFloat(c.fatura), 0);
+    }
+
+    function carregarExtrato() {
+      const mesAno = document.getElementById("mesAno").value;
+      if (!mesAno) {
+        alert("Selecione um mês.");
+        return;
+      }
+
+      const [ano, mes] = mesAno.split("-");
+
+      const saldo = calcularSaldoMes(ano, mes);
+      const investimento = calcularInvestimentosMes(ano, mes);
+      const fatura = calcularFaturasMes(ano, mes);
+      const disponivel = saldo - investimento - fatura;
+      const classe = disponivel >= 0 ? "positivo" : "negativo";
+
+      document.getElementById("extrato-body").innerHTML = `
+        <tr>
+          <td>${formatarReal(saldo)}</td>
+          <td>${formatarReal(investimento)}</td>
+          <td>${formatarReal(fatura)}</td>
+          <td class="${classe}"><strong>${formatarReal(disponivel)}</strong></td>
+        </tr>
+      `;
+    }
+  </script>
+
+</body>
+</html>
