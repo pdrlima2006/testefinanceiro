@@ -380,7 +380,7 @@
 
       function salvarChamado(mensagem) {
         const chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
-        chamados.push({ mensagem, data: new Date().toISOString(), de: 'usuario' });
+        chamados.push({ mensagem, data: new Date().toISOString(), de: 'usuario', respondido: false });
         const resposta = respostaRobo(mensagem);
         chamados.push({ mensagem: resposta, data: new Date().toISOString(), de: 'robo' });
         localStorage.setItem('chamados-suporte', JSON.stringify(chamados));
@@ -427,12 +427,14 @@
           chatMensagens.innerHTML = '<p><em>Nenhum chamado enviado.</em></p>';
           return;
         }
+
         chamados.forEach(c => {
           const div = document.createElement('div');
-          div.className = c.de === 'usuario' ? 'msg-usuario' : 'msg-robo';
+          div.className = c.de === 'usuario' ? 'msg-usuario' : c.de === 'robo' ? 'msg-robo' : 'msg-admin';
           div.innerHTML = `${c.mensagem.replace(/\n/g, '<br>')}<br><p class="msg-data">${new Date(c.data).toLocaleString()}</p>`;
           chatMensagens.appendChild(div);
         });
+
         chatMensagens.scrollTop = chatMensagens.scrollHeight;
       }
     });
