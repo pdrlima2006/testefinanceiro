@@ -23,10 +23,6 @@
       width: 100%;
       padding: 10px;
       margin-bottom: 10px;
-      resize: vertical;
-      min-height: 60px;
-      font-family: sans-serif;
-      font-size: 14px;
     }
     button {
       padding: 8px 16px;
@@ -34,8 +30,6 @@
       border: none;
       color: white;
       cursor: pointer;
-      border-radius: 4px;
-      font-size: 14px;
     }
     button:hover {
       background: #005999;
@@ -47,51 +41,28 @@
   <div id="lista-chamados"></div>
 
   <script>
-    // --- Verifica se admin está logado ---
-    if(localStorage.getItem('adminLogged') !== 'true') {
-      alert('Acesso negado! Faça login como admin.');
-      window.location.href = 'admin-login.html';
-    }
-
     const container = document.getElementById('lista-chamados');
     let chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
 
-    // Filtra chamados de usuário não respondidos e armazena seus índices originais
-    const chamadosNaoRespondidos = chamados
-      .map((c, idx) => ({ ...c, idxOriginal: idx }))
-      .filter(c => c.de === 'usuario' && !c.respondido);
+    chamados.filter(c => c.de === 'usuario' && !c.respondido).forEach((c, idx) => {
+      const bloco = document.createElement('div');
+      bloco.className = 'chamado';
+      bloco.innerHTML = `
+        <div class="mensagem"><strong>Usuário:</strong> ${c.mensagem}</div>
+        <textarea placeholder="Digite sua resposta..." id="resp-${idx}"></textarea>
+        <button onclick="responder(${idx})">Enviar Resposta</button>`;
+      container.appendChild(bloco);
+    });
 
-    if(chamadosNaoRespondidos.length === 0) {
-      container.innerHTML = '<p><em>Não há chamados pendentes para responder.</em></p>';
-    } else {
-      chamadosNaoRespondidos.forEach((c, i) => {
-        const bloco = document.createElement('div');
-        bloco.className = 'chamado';
-        bloco.innerHTML = `
-          <div class="mensagem"><strong>Usuário:</strong> ${c.mensagem}</div>
-          <textarea placeholder="Digite sua resposta..." id="resp-${i}"></textarea>
-          <button onclick="responder(${i})">Enviar Resposta</button>
-        `;
-        container.appendChild(bloco);
-      });
-    }
+    function responder(idx) {
+      const resposta = document.getElementById('resp-' + idx).value.trim();
+      if (!resposta) return alert('Digite algo antes de enviar.');
 
-    function responder(i) {
-      const resposta = document.getElementById('resp-' + i).value.trim();
-      if (!resposta) {
-        alert('Digite algo antes de enviar.');
-        return;
-      }
-
-      // Usa o índice original para marcar o chamado certo como respondido
-      const idxOriginal = chamadosNaoRespondidos[i].idxOriginal;
-
-      chamados[idxOriginal].respondido = true; // marca como respondido
-
+      chamados[idx].respondido = true;
       chamados.push({
         mensagem: resposta,
         data: new Date().toISOString(),
-        de: 'admin',
+        de: 'admin'
       });
 
       localStorage.setItem('chamados-suporte', JSON.stringify(chamados));
