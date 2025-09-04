@@ -24,6 +24,7 @@
       padding: 15px;
       margin-bottom: 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
     }
     #lista-chamados .chamado .nome-usuario {
       font-weight: 700;
@@ -67,6 +68,26 @@
     #lista-chamados button:hover {
       background: #0a7863;
     }
+
+    /* Botão de deletar chamado */
+    .btn-deletar {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #ff4d4d;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: background-color 0.3s;
+    }
+    .btn-deletar:hover {
+      background: #cc0000;
+    }
+
     #msg-vazio {
       text-align: center;
       font-style: italic;
@@ -97,12 +118,18 @@
 
     // Filtra chamados que são do usuário e que ainda não foram respondidos
     const chamadosUsuarioNaoRespondidos = chamados
-      .map((c, idx) => ({ ...c, idx })) // adiciona índice para referencia
+      .map((c, idx) => ({ ...c, idx })) // adiciona índice para referência
       .filter(c => c.de === 'usuario' && !c.respondido);
 
-    if (chamadosUsuarioNaoRespondidos.length === 0) {
+    // Filtra chamados que já foram respondidos
+    const chamadosRespondidos = chamados
+      .map((c, idx) => ({ ...c, idx }))
+      .filter(c => c.respondido);
+
+    if (chamadosUsuarioNaoRespondidos.length === 0 && chamadosRespondidos.length === 0) {
       container.innerHTML = '<p id="msg-vazio">Nenhum chamado pendente no momento.</p>';
     } else {
+      // Exibe chamados não respondidos (com textarea para resposta)
       chamadosUsuarioNaoRespondidos.forEach(c => {
         const nomeUsuario = extrairNome(c.mensagem);
         const mensagemSemNome = c.mensagem.replace(/-.*$/, '').trim();
@@ -114,6 +141,21 @@
           <div class="mensagem"><strong>Mensagem:</strong> ${mensagemSemNome}</div>
           <textarea placeholder="Digite sua resposta..." id="resp-${c.idx}"></textarea>
           <button onclick="responder(${c.idx}, '${nomeUsuario}')">Enviar Resposta</button>
+        `;
+        container.appendChild(bloco);
+      });
+
+      // Exibe chamados respondidos (apenas leitura com botão de deletar)
+      chamadosRespondidos.forEach(c => {
+        const nomeUsuario = extrairNome(c.mensagem);
+        const mensagemSemNome = c.mensagem.replace(/-.*$/, '').trim();
+
+        const bloco = document.createElement('div');
+        bloco.className = 'chamado';
+        bloco.innerHTML = `
+          <span class="nome-usuario">👤 ${nomeUsuario}</span>
+          <div class="mensagem"><strong>Mensagem respondida:</strong> ${mensagemSemNome}</div>
+          <button class="btn-deletar" onclick="deletarChamado(${c.idx})">Deletar</button>
         `;
         container.appendChild(bloco);
       });
@@ -141,6 +183,17 @@
       enviarNotificacao(nomeUsuario, resposta);
 
       // Atualiza a lista de chamados na página
+      location.reload();
+    }
+
+    function deletarChamado(idx) {
+      if (!confirm('Tem certeza que deseja deletar este chamado?')) return;
+
+      chamados.splice(idx, 1);
+      localStorage.setItem('chamados-suporte', JSON.stringify(chamados));
+
+      alert('Chamado deletado com sucesso!');
+
       location.reload();
     }
 
