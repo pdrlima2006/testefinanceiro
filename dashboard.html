@@ -5,13 +5,195 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>📊 Painel de Controle</title>
   <style>
-    /* Estilos principais omitidos por brevidade; copie do exemplo anterior */
-    /* ... */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+    header {
+      background: #003366;
+      color: white;
+      padding: 20px 15px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .welcome-msg {
+      text-align: center;
+      margin: 15px 0;
+      font-size: 18px;
+      font-weight: bold;
+      color: #003366;
+    }
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      list-style: none;
+      padding: 20px;
+      margin: 0;
+      gap: 20px;
+    }
+    ul li {
+      flex: 1 1 150px;
+      max-width: 200px;
+    }
+    ul li a {
+      display: block;
+      background: #007acc;
+      color: white;
+      text-decoration: none;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    ul li a:hover {
+      background: #005999;
+    }
+    #logout-btn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background: #ff4d4d;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      max-width: 200px;
+      text-align: center;
+    }
+    .mensagem {
+      text-align: center;
+      margin: 20px;
+      font-size: 18px;
+    }
+    @media (max-width: 600px) {
+      ul {
+        flex-direction: column;
+        gap: 5px;
+      }
+      ul li {
+        max-width: 100%;
+      }
+      #logout-btn {
+        width: 90%;
+        margin-bottom: 20px;
+      }
+    }
+
+    /* Botão do chat suporte */
+    #suporte-chat-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #007acc;
+      color: white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      border: none;
+      cursor: pointer;
+      font-size: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      z-index: 1000;
+    }
+    #chat-container {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 300px;
+      max-height: 400px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1000;
+    }
+    #chat-header {
+      background: #007acc;
+      color: white;
+      padding: 10px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #chat-mensagens {
+      flex-grow: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+    #chat-input-container {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+    #chat-input {
+      flex-grow: 1;
+      border: none;
+      padding: 10px;
+      font-size: 14px;
+    }
+    #chat-input:focus {
+      outline: none;
+    }
+    #chat-enviar-btn {
+      background: #007acc;
+      color: white;
+      border: none;
+      padding: 0 15px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    /* Mensagens estilos */
+    .msg-usuario {
+      background: #d9edf7;
+      padding: 8px 12px;
+      border-radius: 15px 15px 0 15px;
+      margin-bottom: 5px;
+      max-width: 80%;
+      align-self: flex-end;
+      font-size: 14px;
+    }
+    .msg-robo {
+      background: #f1f0f0;
+      padding: 8px 12px;
+      border-radius: 15px 15px 15px 0;
+      margin-bottom: 5px;
+      max-width: 80%;
+      align-self: flex-start;
+      font-size: 14px;
+      color: #333;
+    }
+    .msg-data {
+      font-size: 10px;
+      color: #888;
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
-  <header><h1>📊 Painel de Controle</h1></header>
-  <div class="welcome-msg">Seja Bem Vindo (a) ao seu Controle Financeiro</div>
+  <header>
+    <h1>📊 Painel de Controle</h1>
+  </header>
+
+  <div class="welcome-msg">
+    Seja Bem Vindo (a) ao seu Controle Financeiro
+  </div>
+
   <ul>
     <li><a href="lancamentos.html">💼 Entradas e Saídas</a></li>
     <li><a href="cartoes.html">💳 Cartões de Crédito</a></li>
@@ -19,28 +201,33 @@
     <li><a href="investimentos.html">🏦 Investimentos</a></li>
     <li><a href="extrato.html">📄 Extrato Geral</a></li>
   </ul>
+
   <button id="logout-btn">Sair</button>
+
   <div class="mensagem">
     <span>👨‍💼</span>
     <p>Aqui você faz seu <strong>Controle Financeiro</strong> de forma simples e prática!</p>
   </div>
+
   <button id="suporte-chat-btn" title="Suporte">💬</button>
+
   <div id="chat-container" aria-live="polite" aria-label="Chat de suporte">
     <div id="chat-header">
       Suporte
-      <button id="chat-close-btn" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">×</button>
+      <button id="chat-close-btn" aria-label="Fechar chat" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">×</button>
     </div>
     <div id="chat-mensagens" role="log" aria-live="polite" aria-relevant="additions"></div>
-    <form id="chat-form" autocomplete="off">
+    <form id="chat-form" autocomplete="off" aria-label="Formulário de chat de suporte">
       <div id="chat-input-container">
         <input type="text" id="chat-input" placeholder="Digite sua mensagem..." aria-required="true" />
-        <button type="submit" id="chat-enviar-btn">Enviar</button>
+        <button type="submit" id="chat-enviar-btn" aria-label="Enviar mensagem">Enviar</button>
       </div>
     </form>
   </div>
 
   <script type="module">
     import { checkLogin, logout } from './script.js';
+
     checkLogin();
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -77,7 +264,7 @@
 
       function salvarChamado(mensagem) {
         const chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
-        chamados.push({ mensagem, data: new Date().toISOString(), de: 'usuario', respondido: false });
+        chamados.push({ mensagem, data: new Date().toISOString(), de: 'usuario' });
         const resposta = respostaRobo(mensagem);
         chamados.push({ mensagem: resposta, data: new Date().toISOString(), de: 'robo' });
         localStorage.setItem('chamados-suporte', JSON.stringify(chamados));
@@ -130,10 +317,6 @@
         });
         chatMensagens.scrollTop = chatMensagens.scrollHeight;
       }
-
-      window.verChamadosSuporte = () => {
-        console.log('Chamados de Suporte:', JSON.parse(localStorage.getItem('chamados-suporte')) || []);
-      };
     });
   </script>
 </body>
