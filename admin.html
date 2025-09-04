@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin - Responder Chamados</title>
+  <title>Admin – Responder Chamados</title>
   <style>
     body {
       font-family: sans-serif;
@@ -22,7 +22,6 @@
     textarea {
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
       margin-bottom: 10px;
     }
     button {
@@ -43,27 +42,23 @@
 
   <script>
     const container = document.getElementById('lista-chamados');
-
     let chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
 
-    chamados
-      .filter(c => c.de === 'usuario' && !c.respondido)
-      .forEach((c, index) => {
-        const div = document.createElement('div');
-        div.className = 'chamado';
-        div.innerHTML = `
-          <div class="mensagem"><strong>Usuário:</strong> ${c.mensagem}</div>
-          <textarea placeholder="Digite sua resposta..." id="resposta-${index}"></textarea>
-          <button onclick="responder(${index})">Enviar Resposta</button>
-        `;
-        container.appendChild(div);
-      });
+    chamados.filter(c => c.de === 'usuario' && !c.respondido).forEach((c, idx) => {
+      const bloco = document.createElement('div');
+      bloco.className = 'chamado';
+      bloco.innerHTML = `
+        <div class="mensagem"><strong>Usuário:</strong> ${c.mensagem}</div>
+        <textarea placeholder="Digite sua resposta..." id="resp-${idx}"></textarea>
+        <button onclick="responder(${idx})">Enviar Resposta</button>`;
+      container.appendChild(bloco);
+    });
 
-    function responder(index) {
-      const resposta = document.getElementById('resposta-' + index).value.trim();
-      if (!resposta) return alert('Digite uma resposta antes de enviar.');
+    function responder(idx) {
+      const resposta = document.getElementById('resp-' + idx).value.trim();
+      if (!resposta) return alert('Digite algo antes de enviar.');
 
-      chamados[index].respondido = true;
+      chamados[idx].respondido = true;
       chamados.push({
         mensagem: resposta,
         data: new Date().toISOString(),
