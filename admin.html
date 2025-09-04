@@ -8,31 +8,78 @@
       font-family: sans-serif;
       background: #f2f2f2;
       padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      color: #003366;
     }
     .chamado {
       background: white;
       border-radius: 5px;
       padding: 15px;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .mensagem {
       margin-bottom: 10px;
+      font-size: 16px;
+      color: #333;
+    }
+    .nome-usuario {
+      font-weight: bold;
+      color: #007acc;
+      margin-bottom: 5px;
+      display: block;
     }
     textarea {
       width: 100%;
       padding: 10px;
       margin-bottom: 10px;
+      resize: vertical;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
     button {
-      padding: 8px 16px;
+      padding: 10px 20px;
       background: #007acc;
       border: none;
       color: white;
       cursor: pointer;
+      border-radius: 5px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+      width: 100%;
+      max-width: 200px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
     button:hover {
       background: #005999;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      .chamado {
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      button {
+        max-width: 100%;
+        font-size: 16px;
+        padding: 12px;
+      }
+      textarea {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -44,17 +91,29 @@
     const container = document.getElementById('lista-chamados');
     let chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
 
+    function extrairNome(mensagem) {
+      const partes = mensagem.split('-');
+      if (partes.length > 1) {
+        return partes.pop().trim();
+      }
+      return "Usuário";
+    }
+
     chamados.filter(c => c.de === 'usuario' && !c.respondido).forEach((c, idx) => {
+      const nomeUsuario = extrairNome(c.mensagem);
+      const mensagemSemNome = c.mensagem.replace(/-.*$/, '').trim();
+
       const bloco = document.createElement('div');
       bloco.className = 'chamado';
       bloco.innerHTML = `
-        <div class="mensagem"><strong>Usuário:</strong> ${c.mensagem}</div>
+        <span class="nome-usuario">👤 ${nomeUsuario}</span>
+        <div class="mensagem"><strong>Mensagem:</strong> ${mensagemSemNome}</div>
         <textarea placeholder="Digite sua resposta..." id="resp-${idx}"></textarea>
-        <button onclick="responder(${idx})">Enviar Resposta</button>`;
+        <button onclick="responder(${idx}, '${nomeUsuario}')">Enviar Resposta</button>`;
       container.appendChild(bloco);
     });
 
-    function responder(idx) {
+    function responder(idx, nomeUsuario) {
       const resposta = document.getElementById('resp-' + idx).value.trim();
       if (!resposta) return alert('Digite algo antes de enviar.');
 
@@ -66,8 +125,33 @@
       });
 
       localStorage.setItem('chamados-suporte', JSON.stringify(chamados));
+
       alert('Resposta enviada com sucesso!');
+
+      enviarNotificacao(nomeUsuario, resposta);
+
       location.reload();
+    }
+
+    function enviarNotificacao(nome, resposta) {
+      fetch('/api/enviar-notificacao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome,
+          resposta,
+          email: 'pdr3426@gmail.com',
+          whatsapp: '(85) 985025111'
+        })
+      }).then(res => {
+        if (res.ok) {
+          console.log('Notificação enviada com sucesso!');
+        } else {
+          console.warn('Falha ao enviar notificação.');
+        }
+      }).catch(err => {
+        console.error('Erro ao enviar notificação:', err);
+      });
     }
   </script>
 </body>
