@@ -230,9 +230,40 @@
     const saldoMesEl = document.getElementById('saldoDoMes');
     let grafico;
 
-    function formatarValor(valor) {
-      return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    function formatarMoeda(event) {
+      const input = event.target;
+      let valor = input.value;
+
+      // Remove tudo que não for número
+      valor = valor.replace(/\D/g, '');
+
+      // Se vazio, limpa o campo
+      if (!valor) {
+        input.value = '';
+        return;
+      }
+
+      // Converte para número considerando os dois últimos dígitos como centavos
+      valor = parseInt(valor, 10);
+
+      // Formata valor para moeda BRL (dividido por 100 para centavos)
+      input.value = (valor / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
+
+    [receitasInput, despesasInput].forEach(input => {
+      input.addEventListener('input', formatarMoeda);
+      input.addEventListener('blur', () => {
+        if (!input.value) input.value = '';
+      });
+    });
+
+    function moedaParaNumero(valor) {
+      if (!valor) return 0;
+      return parseFloat(valor.replace(/\s/g, '').replace('R$', '').replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
 
     function gerarIdUnico() {
       return '_' + Math.random().toString(36).substr(2, 9);
