@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Responder Chamados</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+    .chamado {
+      background: white;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .mensagem {
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      background: #007acc;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005999;
+    }
+  </style>
+</head>
+<body>
+  <h1>📬 Chamados de Suporte</h1>
+  <div id="lista-chamados"></div>
+
+  <script>
+    const container = document.getElementById('lista-chamados');
+
+    let chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
+
+    chamados
+      .filter(c => c.de === 'usuario' && !c.respondido)
+      .forEach((c, index) => {
+        const div = document.createElement('div');
+        div.className = 'chamado';
+        div.innerHTML = `
+          <div class="mensagem"><strong>Usuário:</strong> ${c.mensagem}</div>
+          <textarea placeholder="Digite sua resposta..." id="resposta-${index}"></textarea>
+          <button onclick="responder(${index})">Enviar Resposta</button>
+        `;
+        container.appendChild(div);
+      });
+
+    function responder(index) {
+      const resposta = document.getElementById('resposta-' + index).value.trim();
+      if (!resposta) return alert('Digite uma resposta antes de enviar.');
+
+      chamados[index].respondido = true;
+      chamados.push({
+        mensagem: resposta,
+        data: new Date().toISOString(),
+        de: 'admin'
+      });
+
+      localStorage.setItem('chamados-suporte', JSON.stringify(chamados));
+      alert('Resposta enviada com sucesso!');
+      location.reload();
+    }
+  </script>
+</body>
+</html>
