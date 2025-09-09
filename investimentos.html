@@ -173,6 +173,7 @@
           <th>Prazo (meses)</th>
           <th>Rentabilidade (% a.a.)</th>
           <th>Rendimento Mensal (R$)</th>
+          <th>Rendimento Anual (R$)</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -202,7 +203,14 @@
 
     function calcularRendimentoMensal(valor, rentabilidadeAnual) {
       if (valor && rentabilidadeAnual) {
-        return (valor * (rentabilidadeAnual / 100) / 12);
+        return valor * (rentabilidadeAnual / 100) / 12;
+      }
+      return 0;
+    }
+
+    function calcularRendimentoAnual(valor, rentabilidadeAnual) {
+      if (valor && rentabilidadeAnual) {
+        return valor * (rentabilidadeAnual / 100);
       }
       return 0;
     }
@@ -211,6 +219,8 @@
       tabelaBody.innerHTML = '';
       investimentos.forEach((invest, index) => {
         const rendimentoMensal = calcularRendimentoMensal(invest.valor, invest.rentabilidade);
+        const rendimentoAnual = calcularRendimentoAnual(invest.valor, invest.rentabilidade);
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><input type="checkbox" data-index="${index}"></td>
@@ -221,6 +231,7 @@
           <td>${invest.prazo !== undefined ? invest.prazo : '-'}</td>
           <td>${formatarPercentual(invest.rentabilidade)}</td>
           <td>${formatarMoedaBR(rendimentoMensal)}</td>
+          <td>${formatarMoedaBR(rendimentoAnual)}</td>
         `;
         tabelaBody.appendChild(tr);
       });
@@ -244,7 +255,6 @@
       }
 
       const novoInvestimento = { banco, tipo, valor, data };
-
       if (prazo !== null) novoInvestimento.prazo = prazo;
       if (rentabilidade !== null) novoInvestimento.rentabilidade = rentabilidade;
 
@@ -264,7 +274,6 @@
       if (!confirm('Tem certeza que deseja excluir o(s) investimento(s) selecionado(s)?')) return;
 
       const indicesParaRemover = Array.from(checkboxes).map(cb => Number(cb.dataset.index));
-
       investimentos = investimentos.filter((_, idx) => !indicesParaRemover.includes(idx));
       localStorage.setItem('investimentos', JSON.stringify(investimentos));
       atualizarTabela();
