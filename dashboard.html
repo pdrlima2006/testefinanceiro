@@ -71,7 +71,6 @@
       margin: 20px;
       font-size: 18px;
     }
-
     @media (max-width: 600px) {
       ul {
         flex-direction: column;
@@ -91,7 +90,7 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: #25d366; /* verde whatsapp */
+      background: #25d366;
       color: white;
       border-radius: 50%;
       width: 60px;
@@ -117,7 +116,7 @@
       right: 20px;
       width: 320px;
       max-height: 450px;
-      background: #ece5dd; /* cor fundo do whatsapp */
+      background: #ece5dd;
       border-radius: 15px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.2);
       display: none;
@@ -127,7 +126,6 @@
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       user-select: none;
     }
-
     #chat-header {
       background: #075E54;
       color: white;
@@ -140,7 +138,6 @@
       border-top-left-radius: 15px;
       border-top-right-radius: 15px;
     }
-
     #chat-header button {
       background: none;
       border: none;
@@ -151,7 +148,6 @@
       font-weight: 900;
       padding: 0;
     }
-
     #chat-mensagens {
       flex-grow: 1;
       padding: 15px;
@@ -163,8 +159,6 @@
       gap: 10px;
       scroll-behavior: smooth;
     }
-
-    /* scrollbar para webkit */
     #chat-mensagens::-webkit-scrollbar {
       width: 6px;
     }
@@ -172,11 +166,9 @@
       background-color: rgba(0,0,0,0.15);
       border-radius: 3px;
     }
-
-    /* Mensagem do usuário */
     .msg-usuario {
       align-self: flex-end;
-      background: #dcf8c6; /* verde claro whatsapp */
+      background: #dcf8c6;
       color: #000;
       padding: 10px 15px;
       border-radius: 20px 20px 0 20px;
@@ -197,8 +189,6 @@
       border-top: 10px solid #dcf8c6;
       border-left: 10px solid transparent;
     }
-
-    /* Mensagem do robô */
     .msg-robo {
       align-self: flex-start;
       background: white;
@@ -222,7 +212,6 @@
       border-top: 10px solid white;
       border-right: 10px solid transparent;
     }
-
     .msg-data {
       font-size: 10px;
       color: #555;
@@ -230,7 +219,6 @@
       text-align: right;
       font-style: italic;
     }
-
     #chat-input-container {
       display: flex;
       border-top: 1px solid #ddd;
@@ -238,7 +226,6 @@
       padding: 10px;
       gap: 10px;
     }
-
     #chat-input {
       flex-grow: 1;
       border: 1.5px solid #ddd;
@@ -251,10 +238,7 @@
       max-height: 80px;
       overflow-y: auto;
     }
-    #chat-input:focus {
-      border-color: #075E54;
-    }
-
+    #chat-input:focus { border-color: #075E54; }
     #chat-enviar-btn {
       background: #075E54;
       color: white;
@@ -266,11 +250,7 @@
       transition: background-color 0.2s;
       font-size: 14px;
     }
-    #chat-enviar-btn:hover {
-      background: #0a7863;
-    }
-
-    /* Responsividade para celular */
+    #chat-enviar-btn:hover { background: #0a7863; }
     @media (max-width: 480px) {
       #chat-container {
         width: 100%;
@@ -280,17 +260,9 @@
         border-radius: 0;
         box-shadow: none;
       }
-      #chat-mensagens {
-        padding: 10px;
-        font-size: 13px;
-      }
-      #chat-input-container {
-        padding: 8px;
-      }
-      #chat-enviar-btn {
-        padding: 0 15px;
-        font-size: 13px;
-      }
+      #chat-mensagens { padding: 10px; font-size: 13px; }
+      #chat-input-container { padding: 8px; }
+      #chat-enviar-btn { padding: 0 15px; font-size: 13px; }
     }
   </style>
 </head>
@@ -336,19 +308,18 @@
 
   <script type="module">
     import { checkLogin, logout } from './script.js';
-
     checkLogin();
 
     window.addEventListener('DOMContentLoaded', () => {
       const logoutBtn = document.getElementById('logout-btn');
-      if (logoutBtn) logoutBtn.addEventListener('click', logout);
-
       const suporteBtn = document.getElementById('suporte-chat-btn');
       const chatContainer = document.getElementById('chat-container');
       const chatCloseBtn = document.getElementById('chat-close-btn');
       const chatForm = document.getElementById('chat-form');
       const chatInput = document.getElementById('chat-input');
       const chatMensagens = document.getElementById('chat-mensagens');
+
+      if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
       suporteBtn.addEventListener('click', () => {
         chatContainer.style.display = chatContainer.style.display === 'flex' ? 'none' : 'flex';
@@ -358,9 +329,7 @@
         }
       });
 
-      chatCloseBtn.addEventListener('click', () => {
-        chatContainer.style.display = 'none';
-      });
+      chatCloseBtn.addEventListener('click', () => { chatContainer.style.display = 'none'; });
 
       chatForm.addEventListener('submit', e => {
         e.preventDefault();
@@ -368,11 +337,10 @@
         if (!msg) return;
         salvarChamado(msg);
         chatInput.value = '';
+        chatInput.style.height = 'auto';
         carregarChamados();
-        chatInput.style.height = 'auto'; // reset textarea height
       });
 
-      // Auto resize textarea on input
       chatInput.addEventListener('input', () => {
         chatInput.style.height = 'auto';
         chatInput.style.height = chatInput.scrollHeight + 'px';
@@ -380,9 +348,13 @@
 
       function salvarChamado(mensagem) {
         const chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
+        // Mensagem do usuário
         chamados.push({ mensagem, data: new Date().toISOString(), de: 'usuario', respondido: false });
-        const resposta = respostaRobo(mensagem);
-        chamados.push({ mensagem: resposta, data: new Date().toISOString(), de: 'robo' });
+        // Mensagem do robo, exceto se for opção 6
+        if (mensagem.trim() !== '6') {
+          const resposta = respostaRobo(mensagem);
+          chamados.push({ mensagem: resposta, data: new Date().toISOString(), de: 'robo' });
+        }
         localStorage.setItem('chamados-suporte', JSON.stringify(chamados));
       }
 
@@ -396,27 +368,15 @@
         ) {
           return `Olá! 👋 Eu sou o FinBot 🤖. Como posso te ajudar hoje?\n\nDigite o número de uma das opções abaixo:\n\n1️⃣ Entradas e Saídas\n2️⃣ Cartões de Crédito\n3️⃣ Planejamento Mensal\n4️⃣ Investimentos\n5️⃣ Extrato Geral\n6️⃣ Falar com suporte humano`;
         }
-
         if (texto === '1') return '🔍 Acesse "💼 Entradas e Saídas" para registrar ganhos e despesas.';
         if (texto === '2') return '💳 Em "Cartões de Crédito", cadastre seus cartões e acompanhe seus gastos.';
         if (texto === '3') return '📅 No "Planejamento Mensal", defina metas de gastos e acompanhe seu progresso.';
         if (texto === '4') return '📈 Em "Investimentos", registre e acompanhe seus investimentos.';
         if (texto === '5') return '📄 "Extrato Geral" mostra todos os seus lançamentos.';
-        if (texto === '6') return '📨 Estamos com uma demanda alta no momento. Um atendente humano responderá em breve. Nosso horário de atendimento é das 8h às 20h. ⏰';
-
-        if (texto.includes('senha')) {
-          return '🔒 Ainda sem recuperação automática. Entre em contato que ajudamos por aqui.';
-        }
-        if (texto.includes('erro') || texto.includes('problema') || texto.includes('bug')) {
-          return '😟 Que chato! Pode me contar exatamente o erro que apareceu?';
-        }
-        if (texto.includes('obrigado') || texto.includes('agradecida') || texto.includes('valeu')) {
-          return '✨ Imagina! Se precisar de mais alguma coisa é só chamar.';
-        }
-        if (texto.includes('tchau') || texto.includes('até mais')) {
-          return '👋 Até mais! Estarei por aqui quando precisar.';
-        }
-
+        if (texto.includes('senha')) return '🔒 Ainda sem recuperação automática. Entre em contato que ajudamos por aqui.';
+        if (texto.includes('erro') || texto.includes('problema') || texto.includes('bug')) return '😟 Que chato! Pode me contar exatamente o erro que apareceu?';
+        if (texto.includes('obrigado') || texto.includes('agradecida') || texto.includes('valeu')) return '✨ Imagina! Se precisar de mais alguma coisa é só chamar.';
+        if (texto.includes('tchau') || texto.includes('até mais')) return '👋 Até mais! Estarei por aqui quando precisar.';
         return '❓ Não entendi. Pode escolher um número do menu ou reformular sua pergunta?';
       }
 
@@ -427,14 +387,12 @@
           chatMensagens.innerHTML = '<p><em>Nenhum chamado enviado.</em></p>';
           return;
         }
-
         chamados.forEach(c => {
           const div = document.createElement('div');
           div.className = c.de === 'usuario' ? 'msg-usuario' : c.de === 'robo' ? 'msg-robo' : 'msg-admin';
           div.innerHTML = `${c.mensagem.replace(/\n/g, '<br>')}<br><p class="msg-data">${new Date(c.data).toLocaleString()}</p>`;
           chatMensagens.appendChild(div);
         });
-
         chatMensagens.scrollTop = chatMensagens.scrollHeight;
       }
     });
