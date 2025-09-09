@@ -175,7 +175,7 @@
 
         <div class="campo">
           <label for="valor">Valor (R$):</label>
-        <input type="text" id="Valor" name="Valor" placeholder="R$ 0,00" required />
+          <input type="text" id="valor" name="valor" placeholder="R$ 0,00" required />
         </div>
 
         <div class="campo">
@@ -232,38 +232,20 @@
 
     function formatarMoeda(event) {
       const input = event.target;
-      let valor = input.value;
-
-      // Remove tudo que não for número
-      valor = valor.replace(/\D/g, '');
-
-      // Se vazio, limpa o campo
+      let valor = input.value.replace(/\D/g, '');
       if (!valor) {
         input.value = '';
         return;
       }
-
-      // Converte para número considerando os dois últimos dígitos como centavos
       valor = parseInt(valor, 10);
-
-      // Formata valor para moeda BRL (dividido por 100 para centavos)
       input.value = (valor / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    [receitasInput, despesasInput].forEach(input => {
-      input.addEventListener('input', formatarMoeda);
-      input.addEventListener('blur', () => {
-        if (!input.value) input.value = '';
-      });
-    });
+    document.getElementById('valor').addEventListener('input', formatarMoeda);
 
-    function moedaParaNumero(valor) {
-      if (!valor) return 0;
-      return parseFloat(valor.replace(/\s/g, '').replace('R$', '').replace(/\./g, '').replace(',', '.')) || 0;
+    function formatarValor(num) {
+      return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
 
     function gerarIdUnico() {
       return '_' + Math.random().toString(36).substr(2, 9);
@@ -273,7 +255,6 @@
       lista.innerHTML = '';
       transacoes.forEach((t, index) => {
         const li = document.createElement('li');
-
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.dataset.index = index;
@@ -292,10 +273,8 @@
           link.style.marginLeft = '10px';
           label.appendChild(link);
         }
-
         li.appendChild(checkbox);
         li.appendChild(label);
-
         lista.appendChild(li);
       });
     }
@@ -323,11 +302,7 @@
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom'
-            }
-          }
+          plugins: { legend: { position: 'bottom' } }
         }
       });
     }
@@ -347,17 +322,12 @@
         alert('Selecione um mês válido!');
         return;
       }
-
-      saldoMesEl.textContent = '';
-
       const [ano, mes] = mesSelecionado.split("-");
       const transacoes = JSON.parse(localStorage.getItem('transacoes')) || [];
-
       const filtradas = transacoes.filter(t => {
         const [anoT, mesT] = t.data.split('-');
         return anoT === ano && mesT === mes;
       });
-
       atualizarLista(filtradas);
       atualizarGrafico(filtradas);
       atualizarResumoGeral(filtradas);
@@ -369,19 +339,15 @@
         alert("Selecione um mês primeiro.");
         return;
       }
-
       const [ano, mes] = mesSelecionado.split("-");
       const transacoes = JSON.parse(localStorage.getItem('transacoes')) || [];
-
       const filtradas = transacoes.filter(t => {
         const [anoT, mesT] = t.data.split('-');
         return anoT === ano && mesT === mes;
       });
-
       const entradas = filtradas.filter(t => t.tipo === 'entrada').reduce((s, t) => s + Number(t.valor), 0);
       const saidas = filtradas.filter(t => t.tipo === 'saida').reduce((s, t) => s + Number(t.valor), 0);
       const saldo = entradas - saidas;
-
       saldoMesEl.textContent = `Saldo do mês: ${formatarValor(saldo)} (${formatarValor(entradas)} - ${formatarValor(saidas)})`;
     }
 
@@ -405,26 +371,21 @@
         alert("Selecione um mês para gerar o PDF.");
         return;
       }
-
       const [ano, mes] = mesSelecionado.split("-");
       const transacoes = JSON.parse(localStorage.getItem('transacoes')) || [];
       const filtradas = transacoes.filter(t => {
-        const [anoT, mesT] = t.data.split("-");
+        const [anoT, mesT] = t.data.split('-');
         return anoT === ano && mesT === mes;
       });
-
       if (filtradas.length === 0) {
         alert("Não há transações para este mês.");
         return;
       }
-
       const pdf = new jsPDF();
       pdf.setFontSize(18);
       pdf.text(`Relatório de Entradas e Saídas - ${nomeMesPorExtenso(mes)} de ${ano}`, 10, 20);
-
       pdf.setFontSize(12);
       let y = 30;
-
       filtradas.forEach(t => {
         pdf.text(`Data: ${formatarDataBR(t.data)}`, 10, y);
         pdf.text(`Tipo: ${t.tipo}`, 50, y);
@@ -434,13 +395,8 @@
         y += 10;
         pdf.text(`Descrição: ${t.descricao}`, 10, y);
         y += 15;
-
-        if (y > 270) { // Evita ultrapassar margem inferior
-          pdf.addPage();
-          y = 20;
-        }
+        if (y > 270) { pdf.addPage(); y = 20; }
       });
-
       pdf.save(`Relatorio_${ano}_${mes}.pdf`);
     }
 
@@ -451,14 +407,9 @@
         alert('Selecione ao menos uma transação para deletar.');
         return;
       }
-
-      if (!confirm(`Tem certeza que deseja deletar ${checkboxes.length} transação(ões)?`)) {
-        return;
-      }
-
+      if (!confirm(`Tem certeza que deseja deletar ${checkboxes.length} transação(ões)?`)) return;
       const indicesParaRemover = Array.from(checkboxes).map(cb => Number(cb.dataset.index));
       const novasTransacoes = transacoes.filter((_, i) => !indicesParaRemover.includes(i));
-
       localStorage.setItem('transacoes', JSON.stringify(novasTransacoes));
       carregarDados();
     }
@@ -472,23 +423,21 @@
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-
       const dados = new FormData(form);
       const tipo = dados.get('tipo');
       const categoria = dados.get('categoria');
       const formaPagamento = dados.get('formaPagamento');
       const valorRaw = dados.get('valor');
-      const valor = Number(valorRaw).toFixed(2);
+      const valor = valorRaw.replace(/[^\d,-]/g, '').replace(',', '.'); // converte para número
       const descricao = dados.get('descricao').trim();
       const data = dados.get('data');
       const notaFiscalArquivo = form.notaFiscal.files[0];
 
-      if (!tipo || !categoria || !formaPagamento || !valorRaw || valorRaw <= 0 || !descricao || !data) {
+      if (!tipo || !categoria || !formaPagamento || !valorRaw || parseFloat(valor) <= 0 || !descricao || !data) {
         alert('Preencha todos os campos obrigatórios corretamente.');
         return;
       }
 
-      // Limite de 2MB no anexo
       if (notaFiscalArquivo && notaFiscalArquivo.size > 2 * 1024 * 1024) {
         alert('O arquivo da nota fiscal deve ter no máximo 2MB.');
         return;
@@ -536,11 +485,9 @@
       const entradas = transacoes.filter(t => t.tipo === 'entrada').reduce((s, t) => s + Number(t.valor), 0);
       const saidas = transacoes.filter(t => t.tipo === 'saida').reduce((s, t) => s + Number(t.valor), 0);
       const saldo = entradas - saidas;
-
       saldoMesEl.textContent = `Resumo Geral - Entradas: ${formatarValor(entradas)} | Saídas: ${formatarValor(saidas)} | Saldo: ${formatarValor(saldo)}`;
     }
 
-    // Inicializa data para hoje no campo data
     window.addEventListener('load', () => {
       const hoje = new Date().toISOString().split('T')[0];
       document.getElementById('data').value = hoje;
