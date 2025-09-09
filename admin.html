@@ -69,7 +69,6 @@
       background: #0a7863;
     }
 
-    /* Botão de deletar chamado */
     .btn-deletar {
       position: absolute;
       top: 15px;
@@ -98,78 +97,63 @@
 </head>
 <body>
   <h1>Admin - Chamados de Suporte</h1>
-
-  <div id="lista-chamados">
-    <!-- Chamados vão aparecer aqui -->
-  </div>
+  <div id="lista-chamados"></div>
 
   <script>
-    // Função para extrair o nome do usuário do formato da mensagem
-    function extrairNome(mensagem) {
-      const partes = mensagem.split('-');
-      if (partes.length > 1) {
-        return partes.pop().trim();
-      }
-      return "Usuário";
-    }
-
     const container = document.getElementById('lista-chamados');
     let chamados = JSON.parse(localStorage.getItem('chamados-suporte')) || [];
 
-    // Filtra chamados que são do usuário e que ainda não foram respondidos
-    const chamadosUsuarioNaoRespondidos = chamados
-      .map((c, idx) => ({ ...c, idx })) // adiciona índice para referência
-      .filter(c => c.de === 'usuario' && !c.respondido);
+    function atualizarLista() {
+      container.innerHTML = '';
 
-    // Filtra chamados que já foram respondidos
-    const chamadosRespondidos = chamados
-      .map((c, idx) => ({ ...c, idx }))
-      .filter(c => c.respondido);
+      const pendentes = chamados
+        .map((c, idx) => ({ ...c, idx }))
+        .filter(c => c.de === 'usuario' && !c.respondido);
 
-    if (chamadosUsuarioNaoRespondidos.length === 0 && chamadosRespondidos.length === 0) {
-      container.innerHTML = '<p id="msg-vazio">Nenhum chamado pendente no momento.</p>';
-    } else {
-      // Exibe chamados não respondidos (com textarea para resposta)
-      chamadosUsuarioNaoRespondidos.forEach(c => {
-        const nomeUsuario = extrairNome(c.mensagem);
-        const mensagemSemNome = c.mensagem.replace(/-.*$/, '').trim();
+      const respondidos = chamados
+        .map((c, idx) => ({ ...c, idx }))
+        .filter(c => c.respondido);
 
+      if (!pendentes.length && !respondidos.length) {
+        container.innerHTML = '<p id="msg-vazio">Nenhum chamado pendente no momento.</p>';
+        return;
+      }
+
+      // Chamados pendentes
+      pendentes.forEach(c => {
         const bloco = document.createElement('div');
         bloco.className = 'chamado';
         bloco.innerHTML = `
-          <span class="nome-usuario">👤 ${nomeUsuario}</span>
-          <div class="mensagem"><strong>Mensagem:</strong> ${mensagemSemNome}</div>
+          <span class="nome-usuario">👤 Usuário</span>
+          <div class="mensagem">${c.mensagem}</div>
           <textarea placeholder="Digite sua resposta..." id="resp-${c.idx}"></textarea>
-          <button onclick="responder(${c.idx}, '${nomeUsuario}')">Enviar Resposta</button>
+          <button onclick="responder(${c.idx})">Enviar Resposta</button>
         `;
         container.appendChild(bloco);
       });
 
-      // Exibe chamados respondidos (apenas leitura com botão de deletar)
-      chamadosRespondidos.forEach(c => {
-        const nomeUsuario = extrairNome(c.mensagem);
-        const mensagemSemNome = c.mensagem.replace(/-.*$/, '').trim();
-
+      // Chamados respondidos
+      respondidos.forEach(c => {
         const bloco = document.createElement('div');
         bloco.className = 'chamado';
         bloco.innerHTML = `
-          <span class="nome-usuario">👤 ${nomeUsuario}</span>
-          <div class="mensagem"><strong>Mensagem respondida:</strong> ${mensagemSemNome}</div>
+          <span class="nome-usuario">👤 Usuário</span>
+          <div class="mensagem"><strong>Mensagem respondida:</strong> ${c.mensagem}</div>
           <button class="btn-deletar" onclick="deletarChamado(${c.idx})">Deletar</button>
         `;
         container.appendChild(bloco);
       });
     }
 
-    function responder(idx, nomeUsuario) {
+    function responder(idx) {
       const respostaEl = document.getElementById('resp-' + idx);
       const resposta = respostaEl.value.trim();
       if (!resposta) return alert('Digite algo antes de enviar.');
 
-      // Marca o chamado como respondido
+      // Marca como respondido
       chamados[idx].respondido = true;
 
-      // Adiciona a resposta do admin
+      // Adiciona resposta admin
       chamados.push({
         mensagem: resposta,
         data: new Date().toISOString(),
@@ -177,46 +161,19 @@
       });
 
       localStorage.setItem('chamados-suporte', JSON.stringify(chamados));
-
       alert('Resposta enviada com sucesso!');
 
-      enviarNotificacao(nomeUsuario, resposta);
-
-      // Atualiza a lista de chamados na página
-      location.reload();
+      atualizarLista();
     }
 
     function deletarChamado(idx) {
       if (!confirm('Tem certeza que deseja deletar este chamado?')) return;
-
       chamados.splice(idx, 1);
       localStorage.setItem('chamados-suporte', JSON.stringify(chamados));
-
-      alert('Chamado deletado com sucesso!');
-
-      location.reload();
+      atualizarLista();
     }
 
-    function enviarNotificacao(nome, resposta) {
-      fetch('/api/enviar-notificacao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome,
-          resposta,
-          email: 'pdr3426@gmail.com',
-          whatsapp: '(85) 985025111'
-        })
-      }).then(res => {
-        if (res.ok) {
-          console.log('Notificação enviada com sucesso!');
-        } else {
-          console.warn('Falha ao enviar notificação.');
-        }
-      }).catch(err => {
-        console.error('Erro ao enviar notificação:', err);
-      });
-    }
+    atualizarLista();
   </script>
 </body>
 </html>
